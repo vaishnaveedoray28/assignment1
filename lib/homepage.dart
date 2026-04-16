@@ -10,36 +10,35 @@ class GPAHome extends StatefulWidget {
 }
 
 class _GPAHomeState extends State<GPAHome> {
-  // 1. INPUT: Controllers to capture Grade Points and Credit Hours
-  final TextEditingController sub1Grade = TextEditingController();
-  final TextEditingController sub1Credit = TextEditingController();
-  final TextEditingController sub2Grade = TextEditingController();
-  final TextEditingController sub2Credit = TextEditingController();
-  final TextEditingController sub3Grade = TextEditingController();
-  final TextEditingController sub3Credit = TextEditingController();
+  List<TextEditingController> gradeControllers = [TextEditingController()];
+  List<TextEditingController> creditControllers = [TextEditingController()];
   
   final player = AudioPlayer();
   double totalGPA = 0.0;
-  String status = "Enter results to calculate";
+  String status = "Add subjects to begin";
 
-  // 2. PROCESS: Cumulative GPA Calculation Logic
+  void _addNewSubject() {
+    setState(() {
+      gradeControllers.add(TextEditingController());
+      creditControllers.add(TextEditingController());
+    });
+  }
+
   void calculateTotalGPA() {
-    // Parsing user inputs safely
-    double g1 = double.tryParse(sub1Grade.text) ?? 0.0;
-    double c1 = double.tryParse(sub1Credit.text) ?? 0.0;
-    double g2 = double.tryParse(sub2Grade.text) ?? 0.0;
-    double c2 = double.tryParse(sub2Credit.text) ?? 0.0;
-    double g3 = double.tryParse(sub3Grade.text) ?? 0.0;
-    double c3 = double.tryParse(sub3Credit.text) ?? 0.0;
+    double totalPoints = 0.0;
+    double totalCredits = 0.0;
+
+    for (int i = 0; i < gradeControllers.length; i++) {
+      double g = double.tryParse(gradeControllers[i].text) ?? 0.0;
+      double c = double.tryParse(creditControllers[i].text) ?? 0.0;
+      totalPoints += (g * c);
+      totalCredits += c;
+    }
 
     setState(() {
-      double totalPoints = (g1 * c1) + (g2 * c2) + (g3 * c3);
-      double totalCredits = c1 + c2 + c3;
-
       if (totalCredits > 0) {
         totalGPA = totalPoints / totalCredits;
         
-        // Logical conditions for performance status
         if (totalGPA >= 3.75) {
           status = "Excellent (Dean's List)!";
         } else if (totalGPA >= 2.0) {
@@ -49,12 +48,10 @@ class _GPAHomeState extends State<GPAHome> {
         }
       } else {
         totalGPA = 0.0;
-        status = "Invalid Input";
+        status = "Please enter valid credits";
       }
     });
 
-    // Asset Integration: Play success sound
-    player.play(AssetSource('audios/success.wav'));
   }
 
   @override
@@ -62,35 +59,49 @@ class _GPAHomeState extends State<GPAHome> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('UUM GPA Calculator'),
-        backgroundColor: Colors.tealAccent.shade400,
+        backgroundColor: const Color.fromARGB(255, 113, 165, 238),
         centerTitle: true,
+        
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column( 
+          child: Column(
             children: [
-              // UUM Branding
-              Image.asset('assets/images/logo.png', height: 120),
-              
-              const SizedBox(height: 10),
-              Text(
-                "Check Your Performance",
-                style: GoogleFonts.playwriteAr(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              
-              const Divider(height: 30, thickness: 1),
-
-              // Subject Inputs using a Helper Method for clean code
-              _buildSubjectRow("Subject 1", sub1Grade, sub1Credit),
-              const SizedBox(height: 15),
-              _buildSubjectRow("Subject 2", sub2Grade, sub2Credit),
-              const SizedBox(height: 15),
-              _buildSubjectRow("Subject 3", sub3Grade, sub3Credit),
-
+              const SizedBox (height: 20),
+              Image.asset('assets/images/logo.png', height: 100),
               const SizedBox(height: 30),
+              Text(
+                "Dynamic Performance Tracker",
+                style: GoogleFonts.robotoSlab(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const Divider(height: 60),
 
-              // Calculation Button
+              ...List.generate(gradeControllers.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: _buildSubjectRow(
+                    "Subject ${index + 1}", 
+                    gradeControllers[index], 
+                    creditControllers[index]
+                  ),
+                );
+              }),
+
+              // Visual Plus Button
+              TextButton.icon(
+                onPressed: _addNewSubject,
+                icon: const Icon(Icons.add, color: Colors.teal),
+                label: const Text("Add Another Subject", style: TextStyle(color: Colors.teal)),
+                style:TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  backgroundColor: const Color.fromARGB(255, 171, 226, 88),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              
               ElevatedButton.icon(
                 onPressed: calculateTotalGPA,
                 icon: const Icon(Icons.calculate),
@@ -98,15 +109,13 @@ class _GPAHomeState extends State<GPAHome> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal.shade700,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 ),
               ),
 
               const SizedBox(height: 30),
               const Divider(thickness: 2),
               
-              // 3. OUTPUT: Results Display
               Text(
                 "Overall GPA: ${totalGPA.toStringAsFixed(2)}",
                 style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -124,41 +133,37 @@ class _GPAHomeState extends State<GPAHome> {
     );
   }
 
-  // Helper Widget to create side-by-side Input Fields
   Widget _buildSubjectRow(String label, TextEditingController gController, TextEditingController cController) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 5),
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: TextField(
-                controller: gController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Grade Pt',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
+        Expanded(
+          flex: 1,
+          child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        Expanded(
+          flex: 2,
+          child: TextField(
+            controller: gController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Grade Pt',
+              border: OutlineInputBorder(),
+              isDense: true,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 1,
-              child: TextField(
-                controller: cController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Credits',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-              ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 1,
+          child: TextField(
+            controller: cController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Credit',
+              border: OutlineInputBorder(),
+              isDense: true,
             ),
-          ],
+          ),
         ),
       ],
     );
