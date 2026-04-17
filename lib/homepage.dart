@@ -17,6 +17,8 @@ class _GPAHomeState extends State<GPAHome> {
   double totalGPA = 0.0;
   String status = "Add subjects to begin";
 
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
   void _addNewSubject() {
     setState(() {
       gradeControllers.add(TextEditingController());
@@ -39,7 +41,7 @@ class _GPAHomeState extends State<GPAHome> {
       if (totalCredits > 0) {
         totalGPA = totalPoints / totalCredits;
         if (totalGPA >= 3.75) {
-          status = "Excellent (Dean's List)!";
+          status = "Excellent (Dean's List)";
         } else if (totalGPA >= 2.0) {
           status = "Good Standing";
         } else {
@@ -53,12 +55,26 @@ class _GPAHomeState extends State<GPAHome> {
   }
 
   @override
+  void dispose() {
+    // Clean up to save battery/memory
+    _audioPlayer.dispose();
+    for (var controller in gradeControllers) {
+      controller.dispose();
+    }
+    for (var controller in creditControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 252, 240), 
 
       appBar: AppBar(
-        title: const Text('UUM GPA Calculator', style: TextStyle(color: Color.fromARGB(255, 254, 254, 254),fontWeight: FontWeight.bold)),
+        title: const Text('UUM GPA Calculator', 
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color.fromARGB(255, 96, 37, 37),
         centerTitle: true,
       ),
@@ -70,19 +86,31 @@ class _GPAHomeState extends State<GPAHome> {
             children: [
               const SizedBox(height: 20),
               Image.asset('assets/images/logo.png', height: 100),
-              const SizedBox(height: 30),
               
+              const SizedBox(height: 10),
+
+              IconButton(
+                icon: const Icon(Icons.music_note_rounded, color: Colors.teal, size: 30), 
+                onPressed: () {
+                  _audioPlayer.play(AssetSource('audios/lofii.wav'));
+                },
+              ),
+              const Text("Music On", style: TextStyle(fontSize: 12, color: Colors.teal)),
+              
+              const SizedBox(height: 10),
+
               Text(
                 "Dynamic Performance Tracker",
                 style: GoogleFonts.robotoSlab(
                   fontSize: 22, 
                   fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 0, 0, 0), 
+                  color: Colors.black, 
                 ),
               ),
 
-              Divider(height: 60),
+              const Divider(height: 60),
 
+              // INPUT 
               for (int i = 0; i < gradeControllers.length; i++)
                 Padding(
                   padding: const EdgeInsets.all(10.0),
@@ -98,13 +126,11 @@ class _GPAHomeState extends State<GPAHome> {
               ElevatedButton(
                 onPressed: _addNewSubject,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                  backgroundColor: Colors.white,
                   foregroundColor: const Color.fromARGB(255, 146, 87, 87),
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                 ),
-
                 child: const Text('Add Another Subject'),
-
               ),
 
               const SizedBox(height: 20),
@@ -116,22 +142,21 @@ class _GPAHomeState extends State<GPAHome> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                 ),
-
                 child: const Text('Calculate GPA'),
-
               ),
 
               const Divider(height: 60, thickness: 2),
 
+              // OUTPUT
               Text(
                 "Overall GPA: ${totalGPA.toStringAsFixed(2)}",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal[900]),
               ),
+              const SizedBox(height: 10),
               Text(
                 "Status: $status",
-                style: TextStyle(fontSize: 18, color: Colors.grey[700], fontStyle: FontStyle.italic),
+                style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
               ),
-
             ],
           ),
         ),
@@ -139,31 +164,29 @@ class _GPAHomeState extends State<GPAHome> {
     );
   }
 
-  // 5. THE ROW AND CONTAINER SECTION
   Widget _buildSubjectRow(String label, TextEditingController gController, TextEditingController cController) {
     return Row(
       children: [
         Expanded(
           flex: 1,
-          child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18)),
+          child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         ),
         
-        // GRADE INPUT BOX
         Expanded(
           flex: 2,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white, // FILL COLOR
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.teal.shade200), // BORDER COLOR
+              color: Colors.white, 
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.black),
             ),
             child: TextField(
               controller: gController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 hintText: 'Grade',
-                contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                border: InputBorder.none, // Hides the default line
+                contentPadding: EdgeInsets.all(10),
+                border: InputBorder.none, 
               ),
             ),
           ),
@@ -171,22 +194,21 @@ class _GPAHomeState extends State<GPAHome> {
         
         const SizedBox(width: 10),
 
-        // CREDIT INPUT BOX
         Expanded(
           flex: 1,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white, // FILL COLOR
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.teal.shade200), // BORDER COLOR
+              color: Colors.white, 
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.black), 
             ),
             child: TextField(
               controller: cController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 hintText: 'Credit',
-                contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                border: InputBorder.none, // Hides the default line
+                contentPadding: EdgeInsets.all(10),
+                border: InputBorder.none, 
               ),
             ),
           ),
