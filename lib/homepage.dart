@@ -55,14 +55,14 @@ class _GPAHomeState extends State<GPAHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       backgroundColor: const Color.fromARGB(255, 255, 252, 240), 
+
       appBar: AppBar(
         title: const Text('UUM GPA Calculator', style: TextStyle(color: Color.fromARGB(255, 254, 254, 254),fontWeight: FontWeight.bold)),
         backgroundColor: const Color.fromARGB(255, 96, 37, 37),
         centerTitle: true,
-        elevation: 0,
       ),
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -72,7 +72,6 @@ class _GPAHomeState extends State<GPAHome> {
               Image.asset('assets/images/logo.png', height: 100),
               const SizedBox(height: 30),
               
-              // 2. TEXT STYLE COLOR
               Text(
                 "Dynamic Performance Tracker",
                 style: GoogleFonts.robotoSlab(
@@ -81,11 +80,12 @@ class _GPAHomeState extends State<GPAHome> {
                   color: const Color.fromARGB(255, 0, 0, 0), 
                 ),
               ),
-              const Divider(height: 60),
+
+              Divider(height: 60),
 
               for (int i = 0; i < gradeControllers.length; i++)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 15.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: _buildSubjectRow(
                     "Subject ${i + 1}" ,
                     gradeControllers[i], 
@@ -95,14 +95,16 @@ class _GPAHomeState extends State<GPAHome> {
 
               const SizedBox(height: 20),
 
-              TextButton.icon(
+              ElevatedButton(
                 onPressed: _addNewSubject,
-                icon: const Icon(Icons.add, color: Colors.teal),
-                label: const Text("Add Another Subject", style: TextStyle(color: Colors.teal)),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 212, 234, 179),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                  foregroundColor: const Color.fromARGB(255, 146, 87, 87),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                 ),
+
+                child: const Text('Add Another Subject'),
+
               ),
 
               const SizedBox(height: 20),
@@ -114,7 +116,9 @@ class _GPAHomeState extends State<GPAHome> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                 ),
+
                 child: const Text('Calculate GPA'),
+
               ),
 
               const Divider(height: 60, thickness: 2),
@@ -127,6 +131,7 @@ class _GPAHomeState extends State<GPAHome> {
                 "Status: $status",
                 style: TextStyle(fontSize: 18, color: Colors.grey[700], fontStyle: FontStyle.italic),
               ),
+
             ],
           ),
         ),
